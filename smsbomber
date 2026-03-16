@@ -29,7 +29,6 @@ show_banner() {
     echo -e "${MAGENTA}    ║${NC}                                                           ${MAGENTA}║${NC}"
     echo -e "${MAGENTA}    ║${NC}          ${CYAN}💣 SMS BOMBER - API Client${NC}                     ${MAGENTA}║${NC}"
     echo -e "${MAGENTA}    ║${NC}          ${GRAY}v${VERSION} | by DeV ต้น X9CODESHOP${NC}                 ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}    ║${NC}          ${GRAY}API: ${API_URL}${NC}                                ${MAGENTA}║${NC}"
     echo -e "${MAGENTA}    ║${NC}                                                           ${MAGENTA}║${NC}"
     echo -e "${MAGENTA}    ╚═══════════════════════════════════════════════════════════╝${NC}"
     echo ""
