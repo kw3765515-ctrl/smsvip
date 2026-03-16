@@ -1,158 +1,103 @@
 #!/bin/bash
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# ╔═════════════════════════════════════════════════════════════════════════════╗
-# ║                    💣 SMS BOMBER - INSTALLER 💣                              ║
-# ║                         by DeV ต้น X9CODESHOP                               ║
-# ╚═════════════════════════════════════════════════════════════════════════════╝
-# ═══════════════════════════════════════════════════════════════════════════════
-
-set -e
+# SMS Bomber Installer - Simple & Working Version
+# by DeV ต้น X9CODESHOP
 
 REPO="https://raw.githubusercontent.com/kw3765515-ctrl/smsvip/main"
-INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
 
-# ─── Colors ───────────────────────────────────────────────────────────────────
-RED='\033[0;31m'; GRN='\033[0;32m'; YLW='\033[1;33m'; BLU='\033[0;34m'
-MGN='\033[0;35m'; CYN='\033[0;36m'; WHT='\033[1;37m'; GRY='\033[0;90m'
-LGRN='\033[92m'; LYLW='\033[93m'; LBLU='\033[94m'; LMGN='\033[95m'
-NC='\033[0m'; BOLD='\033[1m'
+# Colors
+RED='\033[0;31m'
+GRN='\033[0;32m'
+YLW='\033[1;33m'
+CYN='\033[0;36m'
+WHT='\033[1;37m'
+NC='\033[0m'
 
-# ─── Banner ───────────────────────────────────────────────────────────────────
-show_banner() {
-    clear
-    echo ""
-    echo -e "${MGN}                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄                              ${NC}"
-    echo -e "${MGN}                         ▄▄▄▄▀▀▀▀          ▀▀▀▀▄▄▄▄                         ${NC}"
-    echo -e "${MGN}                     ▄▄▀▀                          ▀▀▄▄                     ${NC}"
-    echo -e "${MGN}                  ▄█▀                                  ▀█▄                  ${NC}"
-    echo -e "${MGN}                ▄█▀     ${CYN}███████╗███╗   ███╗███████╗${MGN}     ▀█▄                ${NC}"
-    echo -e "${MGN}              ▄█▀       ${CYN}██╔════╝████╗ ████║██╔════╝${MGN}       ▀█▄              ${NC}"
-    echo -e "${MGN}             ▄█         ${CYN}███████╗██╔████╔██║█████╗ ${MGN}         █▄             ${NC}"
-    echo -e "${MGN}            ▄█          ${CYN}╚════██║██║╚██╔╝██║██╔══╝ ${MGN}          █▄            ${NC}"
-    echo -e "${MGN}           ▐█           ${CYN}███████║██║ ╚═╝ ██║███████╗${MGN}           █▌           ${NC}"
-    echo -e "${MGN}           ▐█           ${CYN}╚══════╝╚═╝     ╚═╝╚══════╝${MGN}           █▌           ${NC}"
-    echo -e "${MGN}            █▄                                           ▄█            ${NC}"
-    echo -e "${MGN}            ▀█▄                                         ▄█▀            ${NC}"
-    echo -e "${MGN}              ▀█▄         ${RED}██████╗  ██████╗ ███╗   ███╗${MGN}         ▄█▀              ${NC}"
-    echo -e "${MGN}               ▀█▄        ${RED}██╔══██╗██╔═══██╗████╗ ████║${MGN}        ▄█▀               ${NC}"
-    echo -e "${MGN}                 ▀█▄      ${RED}██████╔╝██║   ██║██╔████╔██║${MGN}      ▄█▀                 ${NC}"
-    echo -e "${MGN}                   ▀█▄    ${RED}██╔══██╗██║   ██║██║╚██╔╝██║${MGN}    ▄█▀                   ${NC}"
-    echo -e "${MGN}                     ▀█▄  ${RED}██████╔╝╚██████╔╝██║ ╚═╝ ██║${MGN}  ▄█▀                     ${NC}"
-    echo -e "${MGN}                       ▀█▄${RED}╚═════╝  ╚═════╝ ╚═╝     ╚═╝${MGN}▄█▀                       ${NC}"
-    echo -e "${MGN}                         ▀█▄                        ▄█▀                         ${NC}"
-    echo -e "${MGN}                           ▀█▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█▀                           ${NC}"
-    echo -e "${MGN}                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀                              ${NC}"
-    echo ""
-    echo -e "${CYN}═══════════════════════════════════════════════════════════════════════════════${NC}"
-    echo -e "              ${BOLD}⚡ ระบบติดตั้ง SMS BOMBER - AUTOMATIC INSTALLER ⚡${NC}"
-    echo -e "${CYN}═══════════════════════════════════════════════════════════════════════════════${NC}"
-    echo ""
-}
+# Clear screen
+clear
 
-# ─── Main ─────────────────────────────────────────────────────────────────────
-show_banner
-
-# Check curl
-echo -e "  ${YLW}🔍 กำลังตรวจสอบระบบ...${NC}"
-if ! command -v curl &> /dev/null; then
-    echo -e "  ${RED}✗ ไม่พบ curl${NC}"
-    
-    # Try to install curl
-    echo -e "  ${YLW}📦 กำลังติดตั้ง curl...${NC}"
-    if command -v apt &> /dev/null; then
-        apt-get update -qq && apt-get install -y -qq curl
-    elif command -v yum &> /dev/null; then
-        yum install -y -q curl
-    elif command -v pacman &> /dev/null; then
-        pacman -Sy --noconfirm curl
-    elif command -v pkg &> /dev/null; then
-        pkg install -y curl
-    else
-        echo -e "  ${RED}✗ ไม่สามารถติดตั้ง curl อัตโนมัติได้${NC}"
-        echo -e "  ${GRY}กรุณาติดตั้ง curl ด้วยตนเอง${NC}"
-        exit 1
-    fi
-fi
-echo -e "  ${LGRN}✓ ระบบพร้อมใช้งาน${NC}"
+echo ""
+echo -e "${CYN}╔══════════════════════════════════════════════════════════════╗${NC}"
+echo -e "${CYN}║${NC}                                                              ${CYN}║${NC}"
+echo -e "${CYN}║${NC}   ${YLW}💣 SMS BOMBER INSTALLER${NC}                                    ${CYN}║${NC}"
+echo -e "${CYN}║${NC}   ${GRN}by DeV ต้น X9CODESHOP${NC}                                      ${CYN}║${NC}"
+echo -e "${CYN}║${NC}                                                              ${CYN}║${NC}"
+echo -e "${CYN}╚══════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
-# Download with spinner
-echo -e "  ${YLW}📥 กำลังดาวน์โหลด SMS Bomber...${NC}"
+# Check curl
+echo -e "${CYN}[1/3]${NC} ตรวจสอบ curl..."
+if ! command -v curl &> /dev/null; then
+    echo -e "${RED}✗ ไม่พบ curl${NC}"
+    echo "กรุณาติดตั้ง curl ก่อน:"
+    echo "  pkg install curl  (สำหรับ Termux)"
+    echo "  apt install curl  (สำหรับ Debian/Ubuntu)"
+    exit 1
+fi
+echo -e "${GRN}✓ พบ curl${NC}"
+echo ""
 
-TMP_DIR=$(mktemp -d)
-TMP_FILE="${TMP_DIR}/smsbomber"
+# Determine install location
+echo -e "${CYN}[2/3]${NC} กำลังเตรียมติดตั้ง..."
 
-# Spinner function
-spin='⣾⣽⣻⢿⡿⣟⣯⣷'
-i=0
+INSTALL_DIR=""
+if [ -w "/usr/local/bin" ]; then
+    INSTALL_DIR="/usr/local/bin"
+elif [ -d "$HOME/.local/bin" ] && [ -w "$HOME/.local/bin" ]; then
+    INSTALL_DIR="$HOME/.local/bin"
+else
+    INSTALL_DIR="$HOME/.local/bin"
+    mkdir -p "$INSTALL_DIR"
+fi
 
-# Start spinner in background
-(
-    while true; do
-        i=$(( (i+1) % 8 ))
-        printf "\r  ${CYN}%s${NC} กำลังดาวน์โหลด..." "${spin:$i:1}"
-        sleep 0.1
-    done
-) &
-SPINNER_PID=$!
+echo -e "${GRN}✓ จะติดตั้งที่: $INSTALL_DIR${NC}"
+echo ""
 
 # Download
-DOWNLOAD_SUCCESS=0
-for attempt in 1 2 3; do
-    if curl -fsSL "${REPO}/smsbomber" -o "$TMP_FILE" 2>/dev/null; then
-        if [ -f "$TMP_FILE" ] && [ -s "$TMP_FILE" ]; then
-            DOWNLOAD_SUCCESS=1
-            break
-        fi
-    fi
-    sleep 1
-done
+echo -e "${CYN}[3/3]${NC} กำลังดาวน์โหลด smsbomber..."
+echo ""
 
-# Stop spinner
-kill $SPINNER_PID 2>/dev/null
-wait $SPINNER_PID 2>/dev/null
+TARGET="${INSTALL_DIR}/smsbomber"
 
-if [ $DOWNLOAD_SUCCESS -eq 0 ]; then
-    printf "\r  ${RED}✗${NC} ดาวน์โหลดล้มเหลว!          \n"
-    rm -rf "$TMP_DIR"
+# Download with progress
+curl -fSL --progress-bar "${REPO}/smsbomber" -o "$TARGET" 2>&1
+
+if [ $? -ne 0 ] || [ ! -f "$TARGET" ]; then
+    echo ""
+    echo -e "${RED}✗ ดาวน์โหลดล้มเหลว!${NC}"
+    echo ""
+    echo "ลองติดตั้งด้วยตนเอง:"
+    echo "  curl -fsSL ${REPO}/smsbomber -o ~/smsbomber"
+    echo "  chmod +x ~/smsbomber"
+    echo "  ~/smsbomber"
     exit 1
 fi
 
-printf "\r  ${LGRN}✓${NC} ดาวน์โหลดเสร็จสิ้น          \n"
+chmod +x "$TARGET"
 
-chmod +x "$TMP_FILE"
+echo ""
+echo -e "${GRN}✓ ดาวน์โหลดเสร็จสิ้น${NC}"
+echo ""
 
-# Install
-if [ -w "$INSTALL_DIR" ] || [ "$EUID" -eq 0 ]; then
-    mv "$TMP_FILE" "${INSTALL_DIR}/smsbomber"
-    INSTALLED_TO="${INSTALL_DIR}/smsbomber"
-else
-    mkdir -p "${HOME}/.local/bin"
-    mv "$TMP_FILE" "${HOME}/.local/bin/smsbomber"
-    INSTALLED_TO="${HOME}/.local/bin/smsbomber"
-    
-    if [[ ":$PATH:" != *":${HOME}/.local/bin:"* ]]; then
-        echo 'export PATH="${HOME}/.local/bin:${PATH}"' >> "${HOME}/.bashrc"
-        export PATH="${HOME}/.local/bin:${PATH}"
-    fi
+# Add to PATH if needed
+if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
+    echo 'export PATH="'$INSTALL_DIR':${PATH}"' >> "$HOME/.bashrc"
+    export PATH="$INSTALL_DIR:${PATH}"
 fi
 
-rm -rf "$TMP_DIR"
+# Success message
+echo ""
+echo -e "${GRN}╔══════════════════════════════════════════════════════════════╗${NC}"
+echo -e "${GRN}║${NC}                   ${GRN}✓ ติดตั้งสำเร็จ!${NC}                         ${GRN}║${NC}"
+echo -e "${GRN}╚══════════════════════════════════════════════════════════════╝${NC}"
+echo ""
+echo -e "📍 ติดตั้งที่: ${WHT}$TARGET${NC}"
+echo ""
+echo -e "${YLW}🚀 กำลังเริ่มใช้งาน...${NC}"
+echo ""
+sleep 2
 
+# Run
+echo -e "${CYN}══════════════════════════════════════════════════════════════${NC}"
 echo ""
-echo -e "${GRN}═══════════════════════════════════════════════════════════════════════════════${NC}"
-echo -e "                        ${LGRN}${BOLD}✓ ติดตั้งสำเร็จ!${NC}"
-echo -e "${GRN}═══════════════════════════════════════════════════════════════════════════════${NC}"
-echo ""
-echo -e "  ${CYN}📍 ติดตั้งที่:${NC} ${WHT}${INSTALLED_TO}${NC}"
-echo -e "  ${GRY}   by DeV ต้น X9CODESHOP${NC}"
-echo ""
-echo -e "${CYN}═══════════════════════════════════════════════════════════════════════════════${NC}"
-echo ""
-
-# Run immediately
-echo -e "  ${YLW}🚀 เริ่มใช้งานเลย...${NC}"
-echo ""
-sleep 1
-"${INSTALLED_TO}"
+"$TARGET"
