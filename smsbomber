@@ -244,12 +244,16 @@ show_progress() {
     printf "] ${BWHT}%3d%%${NC} | ${LGRN}✓ %d${NC} | ${LRED}✗ %d${NC}" "$percentage" "$success" "$failed"
 }
 
+# ─── Global counters ──────────────────────────────────────────────────────────
+declare -g SUCCESS_COUNT=0
+declare -g FAIL_COUNT=0
+
 # ─── Send SMS via API ─────────────────────────────────────────────────────────
 send_sms_api() {
     local phone=$1
     local count=$2
-    local success_count=0
-    local fail_count=0
+    SUCCESS_COUNT=0
+    FAIL_COUNT=0
     
     echo ""
     print_line "=" "$MGN"
@@ -258,7 +262,7 @@ send_sms_api() {
     echo ""
     
     for ((i=1; i<=count; i++)); do
-        show_progress $i $count $success_count $fail_count
+        show_progress $i $count $SUCCESS_COUNT $FAIL_COUNT
         
         response=$(curl -s -X POST "${API_URL}/send" \
             -H "Content-Type: application/json" \
@@ -266,9 +270,9 @@ send_sms_api() {
             --max-time 15 2>/dev/null)
         
         if echo "$response" | grep -q '"success":true'; then
-            ((success_count++))
+            ((SUCCESS_COUNT++))
         else
-            ((fail_count++))
+            ((FAIL_COUNT++))
         fi
         
         sleep 0.3
@@ -297,9 +301,9 @@ show_results() {
     echo -e "  ${WHT}╚══════════════════════════════════════════════════════════╝${NC}"
     echo ""
     
-    if [ $success -eq $count ]; then
+    if [ "${success:-0}" -eq "$count" ]; then
         echo -e "  ${LGRN}🎉 ยิงสำเร็จทั้งหมด!${NC}"
-    elif [ $success -gt 0 ]; then
+    elif [ "${success:-0}" -gt 0 ]; then
         echo -e "  ${YLW}⚡ ยิงสำเร็จบางส่วน${NC}"
     else
         echo -e "  ${BRED}💥 ยิงไม่สำเร็จเลย${NC}"
@@ -332,7 +336,7 @@ quick_mode() {
     echo ""
     
     send_sms_api "$phone" "$count"
-    show_results "$phone" "$count" $success_count $fail_count
+    show_results "$phone" "$count" $SUCCESS_COUNT $FAIL_COUNT
 }
 
 # ─── Interactive Mode ─────────────────────────────────────────────────────────
@@ -346,7 +350,7 @@ interactive_mode() {
     confirm_attack
     
     send_sms_api "$phone" "$count"
-    show_results "$phone" "$count" $success_count $fail_count
+    show_results "$phone" "$count" $SUCCESS_COUNT $FAIL_COUNT
     
     echo ""
     echo -e "  ${CYN}🙏 ขอบคุณที่ใช้บริการ${NC} ${BWHT}SMS BOMBER${NC}"
