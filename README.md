@@ -9,10 +9,16 @@ Script ยิง SMS ผ่าน API - Client Version
 - 🔧 รองรับ Command Line Arguments
 - 📊 แสดงผลลัพธ์แบบ Real-time
 
-## 📥 ดาวน์โหลด
+## 📥 ติดตั้ง (One-Liner)
+```bash
+bash <(curl -Ls https://raw.githubusercontent.com/kw3765515-ctrl/smsvip/main/install.sh)
+```
+
+### หรือติดตั้งด้วยตนเอง
 ```bash
 wget https://raw.githubusercontent.com/kw3765515-ctrl/smsvip/main/smsbomber
 chmod +x smsbomber
+sudo mv smsbomber /usr/local/bin/
 ```
 
 ## 🎮 วิธีใช้
