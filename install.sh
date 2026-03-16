@@ -77,36 +77,43 @@ fi
 echo -e "  ${LGRN}✓ ระบบพร้อมใช้งาน${NC}"
 echo ""
 
-# Download
-echo -e "  ${YLW}📥 กำลังดาวน์โหลด SMS Bomber...${NC}"
-TMP_DIR=$(mktemp -d)
-
 # Download with spinner
-(
-    for i in 1 2 3; do
-        if curl -fsSL "${REPO}/smsbomber" -o "${TMP_DIR}/smsbomber" 2>/dev/null; then
-            exit 0
-        fi
-        sleep 1
-    done
-    exit 1
-) &
-DOWNLOAD_PID=$!
+echo -e "  ${YLW}📥 กำลังดาวน์โหลด SMS Bomber...${NC}"
 
-# Show spinner while downloading
-local spin='⣾⣽⣻⢿⡿⣟⣯⣷'
-local i=0
-while kill -0 $DOWNLOAD_PID 2>/dev/null; do
-    i=$(( (i+1) % 8 ))
-    printf "\r  ${CYN}${spin:$i:1}${NC} กำลังดาวน์โหลด..."
-    sleep 0.1
+TMP_DIR=$(mktemp -d)
+TMP_FILE="${TMP_DIR}/smsbomber"
+
+# Spinner function
+spin='⣾⣽⣻⢿⡿⣟⣯⣷'
+i=0
+
+# Start spinner in background
+(
+    while true; do
+        i=$(( (i+1) % 8 ))
+        printf "\r  ${CYN}%s${NC} กำลังดาวน์โหลด..." "${spin:$i:1}"
+        sleep 0.1
+    done
+) &
+SPINNER_PID=$!
+
+# Download
+DOWNLOAD_SUCCESS=0
+for attempt in 1 2 3; do
+    if curl -fsSL "${REPO}/smsbomber" -o "$TMP_FILE" 2>/dev/null; then
+        if [ -f "$TMP_FILE" ] && [ -s "$TMP_FILE" ]; then
+            DOWNLOAD_SUCCESS=1
+            break
+        fi
+    fi
+    sleep 1
 done
 
-# Wait for download to complete
-wait $DOWNLOAD_PID
-DOWNLOAD_STATUS=$?
+# Stop spinner
+kill $SPINNER_PID 2>/dev/null
+wait $SPINNER_PID 2>/dev/null
 
-if [ $DOWNLOAD_STATUS -ne 0 ]; then
+if [ $DOWNLOAD_SUCCESS -eq 0 ]; then
     printf "\r  ${RED}✗${NC} ดาวน์โหลดล้มเหลว!          \n"
     rm -rf "$TMP_DIR"
     exit 1
@@ -114,15 +121,15 @@ fi
 
 printf "\r  ${LGRN}✓${NC} ดาวน์โหลดเสร็จสิ้น          \n"
 
-chmod +x "${TMP_DIR}/smsbomber"
+chmod +x "$TMP_FILE"
 
 # Install
 if [ -w "$INSTALL_DIR" ] || [ "$EUID" -eq 0 ]; then
-    mv "${TMP_DIR}/smsbomber" "${INSTALL_DIR}/smsbomber"
+    mv "$TMP_FILE" "${INSTALL_DIR}/smsbomber"
     INSTALLED_TO="${INSTALL_DIR}/smsbomber"
 else
     mkdir -p "${HOME}/.local/bin"
-    mv "${TMP_DIR}/smsbomber" "${HOME}/.local/bin/smsbomber"
+    mv "$TMP_FILE" "${HOME}/.local/bin/smsbomber"
     INSTALLED_TO="${HOME}/.local/bin/smsbomber"
     
     if [[ ":$PATH:" != *":${HOME}/.local/bin:"* ]]; then
