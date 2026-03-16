@@ -50,21 +50,6 @@ show_banner() {
     echo ""
 }
 
-# ─── Spinner ──────────────────────────────────────────────────────────────────
-spinner() {
-    local msg="$1"
-    local pid=$2
-    local spin='⣾⣽⣻⢿⡿⣟⣯⣷'
-    local i=0
-    
-    while kill -0 $pid 2>/dev/null; do
-        i=$(( (i+1) % 8 ))
-        printf "\r  ${CYN}${spin:$i:1}${NC} ${msg}"
-        sleep 0.1
-    done
-    printf "\r  ${LGRN}✓${NC} ${msg} ${GRY}เสร็จสิ้น${NC}\n"
-}
-
 # ─── Main ─────────────────────────────────────────────────────────────────────
 show_banner
 
@@ -95,8 +80,39 @@ echo ""
 # Download
 echo -e "  ${YLW}📥 กำลังดาวน์โหลด SMS Bomber...${NC}"
 TMP_DIR=$(mktemp -d)
-(curl -fsSL "${REPO}/smsbomber" -o "${TMP_DIR}/smsbomber" &)
-spinner "กำลังดาวน์โหลด" $!
+
+# Download with spinner
+(
+    for i in 1 2 3; do
+        if curl -fsSL "${REPO}/smsbomber" -o "${TMP_DIR}/smsbomber" 2>/dev/null; then
+            exit 0
+        fi
+        sleep 1
+    done
+    exit 1
+) &
+DOWNLOAD_PID=$!
+
+# Show spinner while downloading
+local spin='⣾⣽⣻⢿⡿⣟⣯⣷'
+local i=0
+while kill -0 $DOWNLOAD_PID 2>/dev/null; do
+    i=$(( (i+1) % 8 ))
+    printf "\r  ${CYN}${spin:$i:1}${NC} กำลังดาวน์โหลด..."
+    sleep 0.1
+done
+
+# Wait for download to complete
+wait $DOWNLOAD_PID
+DOWNLOAD_STATUS=$?
+
+if [ $DOWNLOAD_STATUS -ne 0 ]; then
+    printf "\r  ${RED}✗${NC} ดาวน์โหลดล้มเหลว!          \n"
+    rm -rf "$TMP_DIR"
+    exit 1
+fi
+
+printf "\r  ${LGRN}✓${NC} ดาวน์โหลดเสร็จสิ้น          \n"
 
 chmod +x "${TMP_DIR}/smsbomber"
 
