@@ -1,61 +1,82 @@
 # 💣 SMS Bomber
 
-Script ยิง SMS ผ่าน API - Client Version
+ยิง SMS ผ่าน API - รองรับทุกระบบ (Python Edition)
 
-## 🚀 ฟีเจอร์
-- 📡 ยิงผ่าน API http://141.98.17.37:3000
-- 🎨 UI สวยงาม รองรับภาษาไทย
-- ⚡ ใช้งานง่าย (Interactive Mode)
-- 🔧 รองรับ Command Line Arguments
-- 📊 แสดงผลลัพธ์แบบ Real-time
+## 🚀 วิธีติดตั้ง (เลือกใดวิธีหนึ่ง)
 
-## 📥 ติดตั้ง (One-Liner)
+### วิธีที่ 1: ติดตั้งอัตโนมัติ (แนะนำ)
 ```bash
+# ใช้ Python ติดตั้ง
+python3 <(curl -Ls https://raw.githubusercontent.com/kw3765515-ctrl/smsvip/main/install.py)
+```
+
+```bash
+# หรือใช้ Shell ติดตั้ง
 bash <(curl -Ls https://raw.githubusercontent.com/kw3765515-ctrl/smsvip/main/install.sh)
 ```
 
-### หรือติดตั้งด้วยตนเอง
+### วิธีที่ 2: ดาวน์โหลดไฟล์ Python โดยตรง
+```bash
+# ดาวน์โหลด
+wget https://raw.githubusercontent.com/kw3765515-ctrl/smsvip/main/smsbomber.py
+
+# รัน
+python3 smsbomber.py
+```
+
+### วิธีที่ 3: ดาวน์โหลดไฟล์ Shell
 ```bash
 wget https://raw.githubusercontent.com/kw3765515-ctrl/smsvip/main/smsbomber
 chmod +x smsbomber
-sudo mv smsbomber /usr/local/bin/
-```
-
-## 🎮 วิธีใช้
-
-### โหมด Interactive (สวยงาม)
-```bash
 ./smsbomber
 ```
 
-### ยิงทันที (ผ่าน Arguments)
+## 🎮 วิธีใช้งาน
+
+### โหมด Interactive (แนะนำ)
 ```bash
-./smsbomber 0812345678 10
+smsbomber
+# หรือ
+python3 smsbomber.py
 ```
 
-### เปลี่ยน API URL
+### โหมดเร็ว (ผ่าน Arguments)
 ```bash
-SMS_API_URL=http://your-api.com:3000 ./smsbomber 0812345678 10
+smsbomber 0812345678 10
+# หรือ
+python3 smsbomber.py 0812345678 10
 ```
 
-## 📡 API ที่ใช้
-- **Endpoints:**
-  - `POST /send` - ส่ง SMS
-  - `GET /health` - เช็คสถานะ
-
-## 📋 ตัวอย่างการใช้งาน
+### เปลี่ยน API
 ```bash
-# โหมด Interactive
-./smsbomber
-
-# ยิงทันที 20 ครั้ง
-./smsbomber 0812345678 20
-
-# ใช้ API ของตัวเอง
-SMS_API_URL=http://localhost:3000 ./smsbomber 0812345678 10
+export SMS_API_URL=http://your-api.com:3000
+smsbomber
 ```
+
+## 📁 ไฟล์ใน Repository
+
+| ไฟล์ | คำอธิบาย |
+|------|---------|
+| `smsbomber.py` | 🐍 Python Script (แนะนำ) |
+| `install.py` | 📥 Python Installer |
+| `smsbomber` | 📜 Shell Script |
+| `install.sh` | 📥 Shell Installer |
+
+## 💻 รองรับระบบ
+
+- ✅ Linux (Ubuntu, Debian, CentOS, etc.)
+- ✅ macOS
+- ✅ Windows (ใช้ Python)
+- ✅ Termux (Android)
+- ✅ WSL (Windows Subsystem for Linux)
+
+## 🐍 ความต้องการ
+
+- Python 3.6+ (สำหรับใช้ .py)
+- หรือ Bash (สำหรับใช้ .sh)
 
 ## 👨‍💻 พัฒนาโดย
+
 **by DeV ต้น X9CODESHOP**
 
 ---
