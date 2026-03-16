@@ -33,7 +33,6 @@ SMS_API_URL=http://your-api.com:3000 ./smsbomber 0812345678 10
 ```
 
 ## 📡 API ที่ใช้
-- **Default:** http://141.98.17.37:3000
 - **Endpoints:**
   - `POST /send` - ส่ง SMS
   - `GET /health` - เช็คสถานะ
