@@ -16,7 +16,7 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 
 API_URL="${SMS_API_URL:-http://141.98.17.37:3000}"
-VERSION="3.1"
+VERSION="3.2"
 REPO="https://raw.githubusercontent.com/kw3765515-ctrl/smsvip/main"
 
 # ─── Colors & Styles ──────────────────────────────────────────────────────────
@@ -272,36 +272,43 @@ check_and_update() {
 }
 
 # ─── Send SMS via API ─────────────────────────────────────────────────────────
+# ยิงครั้งเดียว ตามจำนวนที่ผู้ใช้ระบุ
 send_sms_api() {
     local phone=$1
     local count=$2
-    SUCCESS_COUNT=0
-    FAIL_COUNT=0
     
     echo ""
     print_line "=" "$MGN"
-    echo -e "${BMGN}  🚀 เริ่มยิง SMS...${NC}"
+    echo -e "${BMGN}  🚀 กำลังยิง SMS ${count} ครั้ง...${NC}"
     print_line "=" "$MGN"
     echo ""
     
-    for ((i=1; i<=count; i++)); do
-        show_progress $i $count $SUCCESS_COUNT $FAIL_COUNT
-        
-        response=$(curl -s -X POST "${API_URL}/send" \
-            -H "Content-Type: application/json" \
-            -d "{\"phone\":\"$phone\",\"count\":1}" \
-            --max-time 15 2>/dev/null)
-        
-        if echo "$response" | grep -q '"success":true'; then
-            ((SUCCESS_COUNT++))
-        else
-            ((FAIL_COUNT++))
-        fi
-        
-        sleep 0.3
-    done
+    echo -e "  ${CYN}📱 เบอร์:${NC} ${BWHT}${phone}${NC}"
+    echo -e "  ${CYN}🔢 จำนวน:${NC} ${BWHT}${count}${NC} ครั้ง"
+    echo ""
+    
+    # ส่งครั้งเดียวเลย ไม่ต้องวนลูป
+    echo -e "  ${YLW}⏳ กำลังส่ง...${NC}"
+    
+    response=$(curl -s -X POST "${API_URL}/send" \
+        -H "Content-Type: application/json" \
+        -d "{\"phone\":\"$phone\",\"count\":${count}}" \
+        --max-time 60 2>/dev/null)
     
     echo ""
+    
+    # ตรวจสอบผลลัพธ์
+    if echo "$response" | grep -q '"success":true'; then
+        echo -e "  ${LGRN}✓ ส่งคำขอสำเร็จ!${NC}"
+        echo -e "  ${GRY}  API กำลังประมวลผล ${count} ครั้ง...${NC}"
+        SUCCESS_COUNT=$count
+        FAIL_COUNT=0
+    else
+        echo -e "  ${LRED}✗ ส่งคำขอล้มเหลว${NC}"
+        SUCCESS_COUNT=0
+        FAIL_COUNT=$count
+    fi
+    
     echo ""
 }
 
